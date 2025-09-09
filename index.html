@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NKP Suite — ویندوز 11</title>
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/icons/icon-192.png">
+  <!-- Tailwind via CDN for speed -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/themes.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 dark:text-slate-100 selection:bg-indigo-500/20">
+  <div id="app" class="min-h-screen">
+    <!-- Login -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen p-6">
+      <div class="glass w-full max-w-md rounded-2xl p-8 shadow-xl">
+        <div class="flex items-center gap-3 mb-6">
+          <img src="/assets/icons/icon-192.png" class="w-10 h-10 rounded-xl" alt="logo">
+          <h1 class="text-2xl font-bold">NKP — ورود</h1>
+        </div>
+        <label class="block mb-2 text-sm">نام کاربری</label>
+        <input id="login-user" class="input" placeholder="admin" value="admin">
+        <label class="block mb-2 mt-4 text-sm">رمز عبور</label>
+        <input id="login-pass" class="input" type="password" placeholder="1234" value="1234">
+        <div class="mt-6 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <input id="remember" type="checkbox" class="accent-indigo-600">
+            <label for="remember" class="text-sm">مرا به خاطر بسپار</label>
+          </div>
+          <button id="btn-login" class="btn-primary">ورود</button>
+        </div>
+        <p class="mt-4 text-xs text-slate-500">حساب پیش‌فرض: admin / 1234</p>
+      </div>
+    </div>
+
+    <!-- Shell -->
+    <div id="shell" class="hidden">
+      <!-- Top bar -->
+      <header class="backdrop-blur bg-white/70 dark:bg-slate-800/60 sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-700/60">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <img src="/assets/icons/icon-192.png" class="w-8 h-8 rounded-lg" alt="logo">
+            <div>
+              <h2 class="text-sm font-semibold">NKP Suite</h2>
+              <p id="company-name" class="text-xs text-slate-500">شرکت شما</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="global-search" class="input !h-9 w-56" placeholder="جستجو…">
+            <button id="btn-theme" class="btn ghost">تم</button>
+            <button id="btn-backup" class="btn ghost">پشتیبان‌گیری</button>
+            <button id="btn-logout" class="btn danger">خروج</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Desktop-like layout -->
+      <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-12 gap-4">
+        <!-- Sidebar -->
+        <aside class="col-span-12 md:col-span-3 lg:col-span-2">
+          <nav class="glass rounded-2xl p-3 space-y-1" id="sidebar">
+            <button class="nav-item" data-view="dashboard">داشبورد</button>
+            <button class="nav-item" data-view="products">محصولات</button>
+            <button class="nav-item" data-view="customers">مشتریان</button>
+            <button class="nav-item" data-view="invoices">فاکتورها</button>
+            <button class="nav-item" data-view="inventory">انبار</button>
+            <button class="nav-item" data-view="reports">گزارش‌ها</button>
+            <button class="nav-item" data-view="settings">تنظیمات</button>
+          </nav>
+        </aside>
+
+        <!-- Content -->
+        <section class="col-span-12 md:col-span-9 lg:col-span-10 space-y-4">
+          <div id="view-dashboard" class="view glass p-4 rounded-2xl">
+            <h3 class="title">داشبورد</h3>
+            <div id="kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            <canvas id="chart-line" class="mt-6 w-full h-48"></canvas>
+          </div>
+
+          <div id="view-products" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">محصولات</h3>
+            <div class="flex gap-2 mb-3">
+              <input id="product-search" class="input" placeholder="جستجوی نام/دسته…">
+              <button id="btn-add-product" class="btn-primary">افزودن</button>
+              <input type="file" id="file-import-products" class="hidden" accept=".csv,.xlsx,.xls,.json">
+              <button id="btn-import-products" class="btn">Import</button>
+              <button id="btn-export-products" class="btn">Export</button>
+            </div>
+            <div id="product-table" class="table"></div>
+          </div>
+
+          <div id="view-customers" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">مشتریان</h3>
+            <div class="flex gap-2 mb-3">
+              <input id="customer-search" class="input" placeholder="نام/شماره/آخرین خرید…">
+              <button id="btn-add-customer" class="btn-primary">افزودن</button>
+              <button id="btn-export-customers" class="btn">Export</button>
+            </div>
+            <div id="customer-table" class="table"></div>
+          </div>
+
+          <div id="view-invoices" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">فاکتورها</h3>
+            <div class="flex gap-2 mb-3">
+              <button id="btn-new-invoice" class="btn-primary">فاکتور جدید</button>
+              <select id="invoice-date-mode" class="input">
+                <option value="jalali">تاریخ شمسی</option>
+                <option value="gregorian">تاریخ میلادی</option>
+              </select>
+            </div>
+            <div id="invoice-list" class="table"></div>
+          </div>
+
+          <div id="view-inventory" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">انبار</h3>
+            <div id="inventory-table" class="table"></div>
+          </div>
+
+          <div id="view-reports" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">گزارش‌ها</h3>
+            <div class="flex gap-2 mb-3">
+              <input id="report-filter" class="input" placeholder="نام مشتری/وضعیت/تاریخ…">
+              <button id="btn-export-report" class="btn">Export</button>
+              <button id="btn-pdf-report" class="btn">PDF</button>
+            </div>
+            <div id="report-area" class="space-y-3"></div>
+          </div>
+
+          <div id="view-settings" class="view glass p-4 rounded-2xl hidden">
+            <h3 class="title">تنظیمات</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="card">
+                <h4 class="subtitle">مشخصات شرکت</h4>
+                <label class="label">نام شرکت</label>
+                <input id="set-company" class="input" placeholder="NKP Co">
+                <label class="label mt-3">لوگو</label>
+                <input id="set-logo" type="file" accept="image/*" class="input">
+              </div>
+              <div class="card">
+                <h4 class="subtitle">ظاهر و ترجیحات</h4>
+                <label class="label">تم</label>
+                <select id="set-theme" class="input">
+                  <option value="system">System</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+                <label class="label mt-3">مالیات (%)</label>
+                <input id="set-tax" class="input" type="number" value="9">
+                <label class="label mt-3">انبارها (جدا با ,)</label>
+                <input id="set-warehouses" class="input" value="اصلی,شمال">
+                <button id="btn-save-settings" class="btn-primary mt-4">ذخیره</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Taskbar -->
+      <footer class="fixed bottom-3 left-1/2 -translate-x-1/2">
+        <div class="glass rounded-2xl px-3 py-2 shadow-2xl flex gap-1">
+          <button class="task" data-view="dashboard">🏠</button>
+          <button class="task" data-view="products">📦</button>
+          <button class="task" data-view="customers">👥</button>
+          <button class="task" data-view="invoices">🧾</button>
+          <button class="task" data-view="inventory">🏭</button>
+          <button class="task" data-view="reports">📊</button>
+          <button class="task" data-view="settings">⚙️</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/utils.js"></script>
+  <script src="/js/date-utils.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/products.js"></script>
+  <script src="/js/customers.js"></script>
+  <script src="/js/accounting.js"></script>
+  <script src="/js/inventory.js"></script>
+  <script src="/js/reports.js"></script>
+  <script src="/js/backup.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
+  </script>
+</body>
+</html>
